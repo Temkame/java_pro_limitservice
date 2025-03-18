@@ -1,10 +1,8 @@
 package ru.fokin.java_pro_limitservice.controller;
 
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import ru.fokin.java_pro_limitservice.exception.LimitExceededException;
-import ru.fokin.java_pro_limitservice.exception.UserNotFoundException;
+import ru.fokin.java_pro_limitservice.dto.LimitResponse;
 import ru.fokin.java_pro_limitservice.service.UserLimitService;
 
 
@@ -20,66 +18,31 @@ public class UserLimitController {
         this.userLimitService = userLimitService;
     }
 
-    /**
-     * Получить дневной лимит пользователя.
-     *
-     * @param userId ID пользователя
-     * @return Дневной лимит
-     */
     @GetMapping("/{userId}")
-    public ResponseEntity<BigDecimal> getDailyLimit(@PathVariable Long userId) {
+    public ResponseEntity<LimitResponse> getDailyLimit(@PathVariable Long userId) {
         BigDecimal limit = userLimitService.getDailyLimit(userId);
-        return ResponseEntity.ok(limit);
+        return ResponseEntity.ok(new LimitResponse(limit));
     }
 
-    /**
-     * Уменьшить дневной лимит пользователя.
-     *
-     * @param userId ID пользователя
-     * @param amount Сумма для уменьшения
-     * @return Ответ с сообщением об успехе
-     */
     @PostMapping("/{userId}/reduce")
-    public ResponseEntity<String> reduceLimit(
+    public ResponseEntity<LimitResponse> reduceLimit(
             @PathVariable Long userId,
             @RequestParam BigDecimal amount) {
-        try {
-            userLimitService.reduceLimit(userId, amount);
-            return ResponseEntity.ok("Limit reduced successfully for user with ID: " + userId);
-        } catch (LimitExceededException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
-        } catch (UserNotFoundException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
-        }
+        userLimitService.reduceLimit(userId, amount);
+        return ResponseEntity.ok(new LimitResponse("Limit reduced successfully for user with ID: " + userId));
     }
 
-    /**
-     * Восстановить дневной лимит пользователя.
-     *
-     * @param userId ID пользователя
-     * @param amount Сумма для восстановления
-     * @return Ответ с сообщением об успехе
-     */
     @PostMapping("/{userId}/restore")
-    public ResponseEntity<String> restoreLimit(
+    public ResponseEntity<LimitResponse> restoreLimit(
             @PathVariable Long userId,
             @RequestParam BigDecimal amount) {
-        try {
-            userLimitService.restoreLimit(userId, amount);
-            return ResponseEntity.ok("Limit restored successfully for user with ID: " + userId);
-        } catch (UserNotFoundException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
-        }
+        userLimitService.restoreLimit(userId, amount);
+        return ResponseEntity.ok(new LimitResponse("Limit restored successfully for user with ID: " + userId));
     }
 
-    /**
-     * Сбросить лимиты всех пользователей на значение по умолчанию.
-     *
-     * @return Ответ с сообщением об успехе
-     */
     @PostMapping("/reset")
-    public ResponseEntity<String> resetAllLimits() {
+    public ResponseEntity<LimitResponse> resetAllLimits() {
         userLimitService.resetAllLimits();
-        return ResponseEntity.ok("All limits reset to default value: 10000.00");
+        return ResponseEntity.ok(new LimitResponse("All limits reset to default value."));
     }
 }

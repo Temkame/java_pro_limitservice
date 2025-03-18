@@ -41,4 +41,12 @@ public class UserLimit {
     public void setDailyLimit(BigDecimal dailyLimit) {
         this.dailyLimit = dailyLimit;
     }
+
+    @Override
+    public String toString() {
+        return "User Limit{" +
+                "userId=" + userId +
+                ", dailyLimit=" + dailyLimit +
+                '}';
+    }
 }
